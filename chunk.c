@@ -2,12 +2,14 @@
 
 #include "chunk.h"
 #include "memory.h"
+#include "value.h"
 
 void initChunk(Chunk *chunk)
 {
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->code = NULL;
+    initValueArray(&chunk->constants);
 }
 
 void freeChunk(Chunk *chunk)
