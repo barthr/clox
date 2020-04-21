@@ -18,9 +18,27 @@ static int simpleInstruction(const char *name, int offset)
     return offset + 1;
 }
 
+static int constantInstruction(const char *name, Chunk *chunk, int offset)
+{
+    // constant index because that one is pushed one further than the instruction
+    uint8_t constant = chunk->code[offset + 1];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 2;
+}
+
 int disassembleInstruction(Chunk *chunk, int offset)
 {
     printf("%04d ", offset);
+    if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1])
+    {
+        printf("   | ");
+    }
+    else
+    {
+        printf("%4d ", chunk->lines[offset]);
+    }
 
     // get current instruction
     uint8_t instruction = chunk->code[offset];
@@ -29,6 +47,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
     {
     case OP_RETURN:
         return simpleInstruction("OP_RETURN", offset);
+    case OP_CONSTANT:
+        return constantInstruction("OP_CONSTANT", chunk, offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;
