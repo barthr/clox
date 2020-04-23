@@ -11,7 +11,6 @@ void initChunk(Chunk *chunk)
         .capacity = 0,
         .code = NULL,
         .lines = NULL,
-        .constants = NULL,
     };
     initValueArray(&chunk->constants);
 }
