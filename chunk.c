@@ -6,11 +6,12 @@
 
 void initChunk(Chunk *chunk)
 {
-    chunk = &(Chunk){
+    *chunk = (Chunk){
         .count = 0,
         .capacity = 0,
         .code = NULL,
         .lines = NULL,
+        .constants = NULL,
     };
     initValueArray(&chunk->constants);
 }

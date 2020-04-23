@@ -1,6 +1,6 @@
 TARGET = program
 LIBS = -lm
-CC = clang
+CC = gcc -std=c99
 CFLAGS = -g -Wall
 
 .PHONY: default all clean

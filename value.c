@@ -5,7 +5,7 @@
 
 void initValueArray(ValueArray *array)
 {
-    array = &(ValueArray){
+    *array = (ValueArray){
         .values = NULL,
         .capacity = 0,
         .count = 0,
