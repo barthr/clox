@@ -5,8 +5,8 @@
 
 int main(int argc, const char* argv[])
 {
-    VM* vm;
-    initVM(vm);
+    VM vm;
+    initVM(&vm);
 
     Chunk chunk;
     initChunk(&chunk);
