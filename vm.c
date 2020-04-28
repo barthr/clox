@@ -3,8 +3,14 @@
 #include "debug.h"
 #include <stdio.h>
 
+static void resetStack(VM* vm)
+{
+    vm->stackTop = vm->stack;
+}
+
 void initVM(VM* vm)
 {
+    resetStack(vm);
 }
 
 void freeVM(VM* vm)
