@@ -6,5 +6,5 @@
 
 void compile(const char* source)
 {
-    initScanner(source)
+    initScanner(source);
 }
