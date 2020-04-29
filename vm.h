@@ -1,5 +1,5 @@
-#ifndef clox_vm_h
-#define clox_vm_h
+#pragma once
+
 #include "chunk.h"
 #include "value.h"
 
@@ -24,5 +24,3 @@ void freeVM(VM* vm);
 InterpretResult interpret(VM* vm, const char* source);
 void push(VM* vm, Value value);
 Value pop(VM* vm);
-
-#endif

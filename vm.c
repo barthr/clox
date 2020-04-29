@@ -87,6 +87,6 @@ static InterpretResult run(VM* vm)
 
 InterpretResult interpret(VM* vm, const char* source)
 {
-    compile(vm, source);
+    compile(source);
     return INTERPRET_OK;
 }
