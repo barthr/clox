@@ -1,5 +1,14 @@
 {
     "files.associations": {
-        "compiler.h": "c"
+        "compiler.h": "c",
+        "scanner.h": "c",
+        "stdbool.h": "c",
+        "algorithm": "c",
+        "iterator": "c",
+        "vector": "c",
+        "__string": "c",
+        "atomic": "c",
+        "functional": "c",
+        "locale": "c"
     }
 }
