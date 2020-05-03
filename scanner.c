@@ -17,6 +17,19 @@ static char advance(Scanner* scanner)
     return scanner->current[-1];
 }
 
+static char peek(Scanner* scanner)
+{
+    return *scanner->current;
+}
+
+static char peekNext(Scanner* scanner)
+{
+    if (isAtEnd(scanner)) {
+        return '\0';
+    }
+    return scanner->current[1];
+}
+
 static bool match(Scanner* scanner, char expected)
 {
     if (isAtEnd(scanner)) {
@@ -54,8 +67,36 @@ static Token errorToken(Scanner* scanner, const char* message)
     };
 }
 
+void skipWhiteSpace(Scanner* scanner)
+{
+    for (;;) {
+        char c = peek(scanner);
+        switch (c) {
+        case ' ':
+        case '\r':
+        case '\t':
+            advance(scanner);
+            break;
+        case '\n':
+            scanner->line++;
+            advance(scanner);
+            break;
+        case '/':
+            if (peekNext(scanner) == '/') {
+                while (peek(scanner) != '\n' && !isAtEnd(scanner)) {
+                    advance(scanner);
+                }
+            }
+            return;
+        default:
+            return;
+        }
+    }
+}
+
 Token scanToken(Scanner* scanner)
 {
+    skipWhiteSpace(scanner);
     scanner->start = scanner->current;
 
     if (isAtEnd(scanner)) {
