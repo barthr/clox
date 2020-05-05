@@ -1,6 +1,7 @@
 #include "scanner.h"
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 void initScanner(Scanner* scanner, const char* source)
@@ -97,7 +98,7 @@ void skipWhiteSpace(Scanner* scanner)
 
 static TokenType checkKeyword(Scanner* scanner, int start, int length, char* rest, TokenType type)
 {
-    if (scanner->current - scanner->start == start + length && memcmp(scanner->start + 1, rest, length)) {
+    if (scanner->current - scanner->start == start + length && memcmp(scanner->start + start, rest, length) == 0) {
         return type;
     }
     return TOKEN_IDENTIFIER;
@@ -134,8 +135,7 @@ static TokenType identifierType(Scanner* scanner)
 
 Token identifier(Scanner* scanner)
 {
-    char current = peek(scanner);
-    while (isalpha(current) || isdigit(current)) {
+    while (isalpha(peek(scanner)) || isdigit(peek(scanner))) {
         advance(scanner);
     }
 
