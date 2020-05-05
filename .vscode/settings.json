@@ -9,6 +9,8 @@
         "__string": "c",
         "atomic": "c",
         "functional": "c",
-        "locale": "c"
+        "locale": "c",
+        "__locale": "c",
+        "cctype": "c"
     }
 }

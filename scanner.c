@@ -1,4 +1,5 @@
 #include "scanner.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -22,6 +23,11 @@ static char peek(Scanner* scanner)
     return *scanner->current;
 }
 
+static bool isAtEnd(Scanner* scanner)
+{
+    return *scanner->current == '\0';
+}
+
 static char peekNext(Scanner* scanner)
 {
     if (isAtEnd(scanner)) {
@@ -40,11 +46,6 @@ static bool match(Scanner* scanner, char expected)
     }
     scanner->current++;
     return true;
-}
-
-static bool isAtEnd(Scanner* scanner)
-{
-    return *scanner->current == '\0';
 }
 
 static Token makeToken(Scanner* scanner, TokenType type)
@@ -94,6 +95,84 @@ void skipWhiteSpace(Scanner* scanner)
     }
 }
 
+static TokenType checkKeyword(Scanner* scanner, int start, int length, char* rest, TokenType type)
+{
+    if (scanner->current - scanner->start == start + length && memcmp(scanner->start + 1, rest, length)) {
+        return type;
+    }
+    return TOKEN_IDENTIFIER;
+}
+
+static TokenType identifierType(Scanner* scanner)
+{
+    switch (scanner->start[0]) {
+    case 'a':
+        return checkKeyword(scanner, 1, 2, "nd", TOKEN_AND);
+    case 'c':
+        return checkKeyword(scanner, 1, 4, "lass", TOKEN_CLASS);
+    case 'e':
+        return checkKeyword(scanner, 1, 3, "lse", TOKEN_ELSE);
+    case 'i':
+        return checkKeyword(scanner, 1, 1, "f", TOKEN_IF);
+    case 'n':
+        return checkKeyword(scanner, 1, 2, "il", TOKEN_NIL);
+    case 'o':
+        return checkKeyword(scanner, 1, 1, "r", TOKEN_OR);
+    case 'p':
+        return checkKeyword(scanner, 1, 4, "rint", TOKEN_PRINT);
+    case 'r':
+        return checkKeyword(scanner, 1, 5, "eturn", TOKEN_RETURN);
+    case 's':
+        return checkKeyword(scanner, 1, 4, "uper", TOKEN_SUPER);
+    case 'v':
+        return checkKeyword(scanner, 1, 2, "ar", TOKEN_VAR);
+    case 'w':
+        return checkKeyword(scanner, 1, 4, "hile", TOKEN_WHILE);
+    }
+    return TOKEN_IDENTIFIER;
+}
+
+Token identifier(Scanner* scanner)
+{
+    char current = peek(scanner);
+    while (isalpha(current) || isdigit(current)) {
+        advance(scanner);
+    }
+
+    return makeToken(scanner, identifierType(scanner));
+}
+
+Token number(Scanner* scanner)
+{
+    while (isdigit(peek(scanner))) {
+        advance(scanner);
+    }
+
+    if (peek(scanner) == '.' && isdigit(peekNext(scanner))) {
+        advance(scanner); // consume '.'
+        while (isdigit(peek(scanner))) {
+            advance(scanner);
+        }
+    }
+    return makeToken(scanner, TOKEN_NUMBER);
+}
+
+Token string(Scanner* scanner)
+{
+    while (peek(scanner) != '"' && !isAtEnd(scanner)) {
+        if (peek(scanner) == '\n') {
+            scanner->line++;
+        }
+        advance(scanner);
+    }
+
+    if (isAtEnd(scanner)) {
+        return errorToken(scanner, "Unterminated string.");
+    }
+    advance(scanner);
+    return makeToken(scanner, TOKEN_STRING);
+}
+
 Token scanToken(Scanner* scanner)
 {
     skipWhiteSpace(scanner);
@@ -104,6 +183,13 @@ Token scanToken(Scanner* scanner)
     }
 
     char c = advance(scanner);
+    if (isalpha(c)) {
+        return identifier(scanner);
+    }
+    if (isdigit(c)) {
+        return number(scanner);
+    }
+
     switch (c) {
     case '(':
         return makeToken(scanner, TOKEN_LEFT_PAREN);
@@ -135,6 +221,8 @@ Token scanToken(Scanner* scanner)
         return makeToken(scanner, match(scanner, '=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
     case '>':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+    case '"':
+        return string(scanner);
     }
     return errorToken(scanner, "Unexpected character.");
 }
