@@ -98,7 +98,10 @@ void skipWhiteSpace(Scanner* scanner)
 
 static TokenType checkKeyword(Scanner* scanner, int start, int length, char* rest, TokenType type)
 {
-    if (scanner->current - scanner->start == start + length && memcmp(scanner->start + start, rest, length) == 0) {
+    char keyword[length];
+    strncpy(&keyword[0], scanner->start + start, length);
+
+    if (scanner->current - scanner->start == start + length && strcmp(keyword, rest) == 0) {
         return type;
     }
     return TOKEN_IDENTIFIER;
