@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "chunk.h"
 #include "common.h"
 #include "compiler.h"
 #include "scanner.h"
@@ -81,7 +82,7 @@ bool compile(const char* source, Chunk* chunk)
         .panicMode = false,
     };
 
-    advance(&scanner, &parser);
+    advance(&parser, &scanner);
     expression(&scanner);
     consume(&parser, &scanner, TOKEN_EOF, "Expect end of expression.");
 
