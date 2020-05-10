@@ -83,7 +83,7 @@ bool compile(const char* source, Chunk* chunk)
     };
 
     advance(&parser, &scanner);
-    expression(&scanner);
+    // expression(&scanner);
     consume(&parser, &scanner, TOKEN_EOF, "Expect end of expression.");
 
     return !parser.hadError;
