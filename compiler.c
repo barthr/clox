@@ -13,6 +13,7 @@ typedef struct {
     Token previous;
     bool hadError;
     bool panicMode;
+    Chunk* currentChunk
 } Parser;
 
 static void errorAt(Parser* parser, Token* token, const char* message)
@@ -67,10 +68,71 @@ static void consume(Parser* parser, Scanner* scanner, TokenType type, const char
     errorAtCurrent(parser, message);
 }
 
-// static void emitByte(Parser* parser, uint8_t byte)
-// {
-//     writeChunk(currentChunk(), byte, parser->previous.line);
-// }
+static void emitByte(Parser* parser, uint8_t byte)
+{
+    writeChunk(parser->currentChunk, byte, parser->previous.line);
+}
+
+static void emitReturn(Parser* parser)
+{
+    emitByte(parser, OP_RETURN);
+}
+
+static uint8_t makeConstant(Parser* parser, Value value)
+{
+    int constant = addConstant(parser->currentChunk, value);
+    if (constant > UINT8_MAX) {
+        error(parser, "Too many constants in one chunk.");
+        return 0;
+    }
+    return constant;
+}
+
+static void emitConstant(Parser* parser, Value value)
+{
+    emitBytes(parser, OP_CONSTANT, makeConstant(parser, value));
+}
+
+static void endCompiler(Parser* parser)
+{
+    emitReturn(parser);
+}
+
+static void grouping(Parser* parser, Scanner* scanner)
+{
+    expression(parser);
+    consume(parser, scanner, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+}
+
+static void number(Parser* parser)
+{
+    double value = strod(parser->previous.start, NULL);
+    emitConstant(parser, value);
+}
+
+static void unary(Parser* parser)
+{
+    TokenType operatorType = parser->previous.type;
+    expression(parser);
+
+    switch (operatorType) {
+    case TOKEN_MINUS:
+        emitByte(parser, OP_NEGATE);
+        break;
+    default:
+        return;
+    }
+}
+
+static void expression(Parser* parser)
+{
+}
+
+static void emitBytes(Parser* parser, uint8_t byte1, uint8_t byte2)
+{
+    emitByte(parser, byte1);
+    emitByte(parser, byte2);
+}
 
 bool compile(const char* source, Chunk* chunk)
 {
@@ -80,11 +142,13 @@ bool compile(const char* source, Chunk* chunk)
     Parser parser = (Parser) {
         .hadError = false,
         .panicMode = false,
+        .currentChunk = chunk,
     };
 
     advance(&parser, &scanner);
-    // expression(&scanner);
+    expression(&scanner);
     consume(&parser, &scanner, TOKEN_EOF, "Expect end of expression.");
+    endCompiler(&parser);
 
     return !parser.hadError;
 }
