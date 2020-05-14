@@ -16,6 +16,20 @@ typedef struct {
     Chunk* currentChunk
 } Parser;
 
+typedef enum {
+    PREC_NONE,
+    PREC_ASSIGNMENT, // =
+    PREC_OR, // or
+    PREC_AND, // and
+    PREC_EQUALITY, // == !=
+    PREC_COMPARISON, // < > <= >=
+    PREC_TERM, // + -
+    PREC_FACTOR, // * /
+    PREC_UNARY, // ! -
+    PREC_CALL, // . ()
+    PREC_PRIMARY
+} Precedence;
+
 static void errorAt(Parser* parser, Token* token, const char* message)
 {
     if (parser->panicMode) {
@@ -113,7 +127,8 @@ static void number(Parser* parser)
 static void unary(Parser* parser)
 {
     TokenType operatorType = parser->previous.type;
-    expression(parser);
+
+    parsePrecedence(PREC_UNARY);
 
     switch (operatorType) {
     case TOKEN_MINUS:
@@ -124,8 +139,13 @@ static void unary(Parser* parser)
     }
 }
 
+static void parsePrecedence(Precedence precedence)
+{
+}
+
 static void expression(Parser* parser)
 {
+    parsePrecedence(PREC_ASSIGNMENT);
 }
 
 static void emitBytes(Parser* parser, uint8_t byte1, uint8_t byte2)
