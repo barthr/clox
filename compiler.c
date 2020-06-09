@@ -7,6 +7,9 @@
 #include "compiler.h"
 #include "scanner.h"
 #include "vm.h"
+#ifdef DEBUG_PRINT_CODE
+#include "debug.h"
+#endif
 
 typedef struct {
     Token current;
@@ -129,6 +132,11 @@ static void emitConstant(Parser* parser, Value value)
 static void endCompiler(Parser* parser)
 {
     emitReturn(parser);
+#ifdef DEBUG_PRINT_CODE
+    if (!parser->hadError) {
+        disassembleChunk(parser->currentChunk, "code");
+    }
+#endif
 }
 
 static void binary(Parser* parser, Scanner* scanner)
