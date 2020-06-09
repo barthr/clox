@@ -237,6 +237,11 @@ static void parsePrecedence(Precedence precedence, Parser* parser, Scanner* scan
     }
 
     prefixRule(parser, scanner);
+    while (precedence <= getRule(parser->current.type)->precedence) {
+        advance(parser, scanner);
+        ParseFn infixRule = getRule(parser->previous.type)->infix;
+        infixRule(parser, scanner);
+    }
 }
 
 static ParseRule* getRule(TokenType type)
