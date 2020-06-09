@@ -30,7 +30,59 @@ typedef enum {
     PREC_PRIMARY
 } Precedence;
 
-static void errorAt(Parser* parser, Token* token, const char* message)
+typedef void (*ParseFn)(Parser(*), Scanner(*));
+
+typedef struct {
+    ParseFn prefix;
+    ParseFn infix;
+    Precedence precedence;
+} ParseRule;
+
+ParseRule rules[] = {
+    { grouping, NULL, PREC_NONE }, // TOKEN_LEFT_PAREN
+    { NULL, NULL, PREC_NONE }, // TOKEN_RIGHT_PAREN
+    { NULL, NULL, PREC_NONE }, // TOKEN_LEFT_BRACE
+    { NULL, NULL, PREC_NONE }, // TOKEN_RIGHT_BRACE
+    { NULL, NULL, PREC_NONE }, // TOKEN_COMMA
+    { NULL, NULL, PREC_NONE }, // TOKEN_DOT
+    { unary, binary, PREC_TERM }, // TOKEN_MINUS
+    { NULL, binary, PREC_TERM }, // TOKEN_PLUS
+    { NULL, NULL, PREC_NONE }, // TOKEN_SEMICOLON
+    { NULL, binary, PREC_FACTOR }, // TOKEN_SLASH
+    { NULL, binary, PREC_FACTOR }, // TOKEN_STAR
+    { NULL, NULL, PREC_NONE }, // TOKEN_BANG
+    { NULL, NULL, PREC_NONE }, // TOKEN_BANG_EQUAL
+    { NULL, NULL, PREC_NONE }, // TOKEN_EQUAL
+    { NULL, NULL, PREC_NONE }, // TOKEN_EQUAL_EQUAL
+    { NULL, NULL, PREC_NONE }, // TOKEN_GREATER
+    { NULL, NULL, PREC_NONE }, // TOKEN_GREATER_EQUAL
+    { NULL, NULL, PREC_NONE }, // TOKEN_LESS
+    { NULL, NULL, PREC_NONE }, // TOKEN_LESS_EQUAL
+    { NULL, NULL, PREC_NONE }, // TOKEN_IDENTIFIER
+    { NULL, NULL, PREC_NONE }, // TOKEN_STRING
+    { number, NULL, PREC_NONE }, // TOKEN_NUMBER
+    { NULL, NULL, PREC_NONE }, // TOKEN_AND
+    { NULL, NULL, PREC_NONE }, // TOKEN_CLASS
+    { NULL, NULL, PREC_NONE }, // TOKEN_ELSE
+    { NULL, NULL, PREC_NONE }, // TOKEN_FALSE
+    { NULL, NULL, PREC_NONE }, // TOKEN_FOR
+    { NULL, NULL, PREC_NONE }, // TOKEN_FUN
+    { NULL, NULL, PREC_NONE }, // TOKEN_IF
+    { NULL, NULL, PREC_NONE }, // TOKEN_NIL
+    { NULL, NULL, PREC_NONE }, // TOKEN_OR
+    { NULL, NULL, PREC_NONE }, // TOKEN_PRINT
+    { NULL, NULL, PREC_NONE }, // TOKEN_RETURN
+    { NULL, NULL, PREC_NONE }, // TOKEN_SUPER
+    { NULL, NULL, PREC_NONE }, // TOKEN_THIS
+    { NULL, NULL, PREC_NONE }, // TOKEN_TRUE
+    { NULL, NULL, PREC_NONE }, // TOKEN_VAR
+    { NULL, NULL, PREC_NONE }, // TOKEN_WHILE
+    { NULL, NULL, PREC_NONE }, // TOKEN_ERROR
+    { NULL, NULL, PREC_NONE }, // TOKEN_EOF
+};
+
+static void
+errorAt(Parser* parser, Token* token, const char* message)
 {
     if (parser->panicMode) {
         return;
@@ -112,23 +164,66 @@ static void endCompiler(Parser* parser)
     emitReturn(parser);
 }
 
+static void parsePrecedence(Precedence precedence, Parser* parser, Scanner* scanner)
+{
+    advance(parser, scanner);
+
+    ParseFn prefixRule = getRule(parser->previous.type)->prefix;
+    if (prefixRule == NULL) {
+        error(parser, "Expect expression.");
+        return;
+    }
+
+    prefixRule(parser, scanner);
+}
+
+static ParseRule* getRule(TokenType type)
+{
+    return &rules[type];
+}
+
+static void binary(Parser* parser, Scanner* scanner)
+{
+    TokenType operatorType = parser->previous.type;
+
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence(rule->precedence + 1, parser, scanner);
+
+    switch (operatorType) {
+    case TOKEN_PLUS:
+        emitByte(parser, OP_ADD);
+        break;
+    case TOKEN_MINUS:
+        emitByte(parser, OP_SUBTRACT);
+        break;
+    case TOKEN_STAR:
+        emitByte(parser, OP_MULTIPLY);
+        break;
+    case TOKEN_SLASH:
+        emitByte(parser, OP_DIVIDE);
+        break;
+    default:
+        return; // Unreachable.
+    }
+}
+
 static void grouping(Parser* parser, Scanner* scanner)
 {
-    expression(parser);
+    expression(parser, scanner);
     consume(parser, scanner, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-static void number(Parser* parser)
+static void number(Parser* parser, Scanner* scanner)
 {
     double value = strod(parser->previous.start, NULL);
     emitConstant(parser, value);
 }
 
-static void unary(Parser* parser)
+static void unary(Parser* parser, Scanner* scanner)
 {
     TokenType operatorType = parser->previous.type;
 
-    parsePrecedence(PREC_UNARY);
+    parsePrecedence(PREC_UNARY, parser, scanner);
 
     switch (operatorType) {
     case TOKEN_MINUS:
@@ -139,13 +234,9 @@ static void unary(Parser* parser)
     }
 }
 
-static void parsePrecedence(Precedence precedence)
+static void expression(Parser* parser, Scanner* scanner)
 {
-}
-
-static void expression(Parser* parser)
-{
-    parsePrecedence(PREC_ASSIGNMENT);
+    parsePrecedence(PREC_ASSIGNMENT, parser, scanner);
 }
 
 static void emitBytes(Parser* parser, uint8_t byte1, uint8_t byte2)
@@ -166,7 +257,7 @@ bool compile(const char* source, Chunk* chunk)
     };
 
     advance(&parser, &scanner);
-    expression(&scanner);
+    expression(&parser, &scanner);
     consume(&parser, &scanner, TOKEN_EOF, "Expect end of expression.");
     endCompiler(&parser);
 

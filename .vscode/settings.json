@@ -11,6 +11,7 @@
         "functional": "c",
         "locale": "c",
         "__locale": "c",
-        "cctype": "c"
+        "cctype": "c",
+        "typeinfo": "c"
     }
 }
