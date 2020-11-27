@@ -8,7 +8,7 @@
 typedef struct
 {
     Chunk* chunk;
-    uint8_t* ip;  // instruction pointer
+    uint8_t* ip; // instruction pointer
     Value stack[STACK_MAX];
     Value* stackTop;
 } VM;
