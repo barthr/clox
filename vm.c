@@ -1,37 +1,33 @@
 #include "vm.h"
+
+#include <stdio.h>
+
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
-#include <stdio.h>
 
-static void resetStack(VM* vm)
-{
+static void resetStack(VM* vm) {
     vm->stackTop = vm->stack;
 }
 
-void initVM(VM* vm)
-{
+void initVM(VM* vm) {
     resetStack(vm);
 }
 
-void freeVM(VM* vm)
-{
+void freeVM(VM* vm) {
 }
 
-void push(VM* vm, Value value)
-{
+void push(VM* vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
 }
 
-Value pop(VM* vm)
-{
+Value pop(VM* vm) {
     vm->stackTop--;
     return *vm->stackTop;
 }
 
-static InterpretResult run(VM* vm)
-{
+static InterpretResult run(VM* vm) {
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(op)       \
@@ -54,30 +50,30 @@ static InterpretResult run(VM* vm)
 #endif
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
-        case OP_ADD:
-            BINARY_OP(+);
-            break;
-        case OP_SUBTRACT:
-            BINARY_OP(-);
-            break;
-        case OP_MULTIPLY:
-            BINARY_OP(*);
-            break;
-        case OP_DIVIDE:
-            BINARY_OP(/);
-            break;
-        case OP_NEGATE:
-            push(vm, -pop(vm));
-            break;
-        case OP_RETURN:
-            printValue(pop(vm));
-            printf("\n");
-            return INTERPRET_OK;
-        case OP_CONSTANT: {
-            Value constant = READ_CONSTANT();
-            push(vm, constant);
-            break;
-        }
+            case OP_ADD:
+                BINARY_OP(+);
+                break;
+            case OP_SUBTRACT:
+                BINARY_OP(-);
+                break;
+            case OP_MULTIPLY:
+                BINARY_OP(*);
+                break;
+            case OP_DIVIDE:
+                BINARY_OP(/);
+                break;
+            case OP_NEGATE:
+                push(vm, -pop(vm));
+                break;
+            case OP_RETURN:
+                printValue(pop(vm));
+                printf("\n");
+                return INTERPRET_OK;
+            case OP_CONSTANT: {
+                Value constant = READ_CONSTANT();
+                push(vm, constant);
+                break;
+            }
         }
     }
 #undef READ_BYTE
@@ -85,8 +81,7 @@ static InterpretResult run(VM* vm)
 #undef BINARY_OP
 }
 
-InterpretResult interpret(VM* vm, const char* source)
-{
+InterpretResult interpret(VM* vm, const char* source) {
     Chunk chunk;
     initChunk(&chunk);
 
