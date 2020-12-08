@@ -14,6 +14,7 @@
         "cctype": "c",
         "typeinfo": "c",
         "cmath": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "limits": "cpp"
     }
 }
