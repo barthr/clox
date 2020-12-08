@@ -2,6 +2,7 @@
 #include "common.h"
 #include "debug.h"
 #include "vm.h"
+// #include <emscripten/emscripten.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,3 +77,11 @@ int main(int argc, const char* argv[])
     freeVM(&vm);
     return 0;
 }
+
+// void EMSCRIPTEN_KEEPALIVE browserRepl(const char* line)
+// {
+//     VM vm;
+//     initVM(&vm);
+//     repl(&vm);
+//     interpret(&vm, line);
+// }
