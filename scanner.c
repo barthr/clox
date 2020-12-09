@@ -132,6 +132,10 @@ static TokenType identifierType(Scanner* scanner)
         return checkKeyword(scanner, 1, 2, "ar", TOKEN_VAR);
     case 'w':
         return checkKeyword(scanner, 1, 4, "hile", TOKEN_WHILE);
+    case 't':
+        return checkKeyword(scanner, 1, 3, "rue", TOKEN_TRUE);
+    case 'f':
+        return checkKeyword(scanner, 1, 4, "alse", TOKEN_FALSE);
     }
     return TOKEN_IDENTIFIER;
 }
