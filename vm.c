@@ -52,6 +52,11 @@ static Value peek(VM* vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
+static bool isFalsey(Value value)
+{
+    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+}
+
 static InterpretResult run(VM* vm)
 {
 #define READ_BYTE() (*vm->ip++)
@@ -91,6 +96,9 @@ static InterpretResult run(VM* vm)
             break;
         case OP_DIVIDE:
             BINARY_OP(NUMBER_VAL, /);
+            break;
+        case OP_NOT:
+            push(vm, BOOL_VAL(isFalsey(pop(vm))));
             break;
         case OP_NEGATE:
             if (!IS_NUMBER(peek(vm, 0))) {

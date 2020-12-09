@@ -9,6 +9,8 @@ void disassembleChunk(Chunk* chunk, const char* name)
     for (int offset = 0; offset < chunk->count;) {
         offset = disassembleInstruction(chunk, offset);
     }
+
+    printf("== %s == \n", "end");
 }
 
 static int simpleInstruction(const char* name, int offset)
@@ -60,7 +62,8 @@ int disassembleInstruction(Chunk* chunk, int offset)
         return simpleInstruction("OP_TRUE", offset);
     case OP_FALSE:
         return simpleInstruction("OP_FALSE", offset);
-
+    case OP_NOT:
+        return simpleInstruction("OP_NOT", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

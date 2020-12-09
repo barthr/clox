@@ -101,8 +101,8 @@ static TokenType checkKeyword(Scanner* scanner, int start, int length, char* res
     char keyword[length];
     strncpy(&keyword[0], scanner->start + start, length);
 
-    int equal = strncmp(keyword, rest, length);
-    if (scanner->current - scanner->start == start + length && equal == 0) {
+    int equal = strncmp(keyword, rest, length) == 0;
+    if (scanner->current - scanner->start == start + length && equal) {
         return type;
     }
     return TOKEN_IDENTIFIER;
