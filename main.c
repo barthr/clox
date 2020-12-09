@@ -3,7 +3,6 @@
 #include "debug.h"
 #include "vm.h"
 // #include <emscripten/emscripten.h>
-#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

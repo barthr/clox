@@ -2,32 +2,36 @@
 
 #include "memory.h"
 #include "value.h"
-#include <glib.h>
 
 void initValueArray(ValueArray* array)
 {
     *array = (ValueArray) {
-        .values = g_array_new(true, true, 0),
+        .values = NULL,
+        .capacity = 0,
+        .count = 0,
     };
 }
 
 void writeValueArray(ValueArray* array, Value value)
 {
-    g_array_append_val(array->values, value);
+    if (array->capacity < array->count + 1) {
+        int oldCapacity = array->capacity;
+        array->capacity = GROW_CAPACITY(oldCapacity);
+        array->values = GROW_ARRAY(array->values, Value,
+            oldCapacity, array->capacity);
+    }
+
+    array->values[array->count] = value;
+    array->count++;
 }
 
 void freeValueArray(ValueArray* array)
 {
-    g_array_free(array->values, true);
+    FREE_ARRAY(Value, array->values, array->capacity);
     initValueArray(array);
 }
 
 void printValue(Value value)
 {
     printf("%g", AS_NUMBER(value));
-}
-
-int length(ValueArray* array)
-{
-    return g_array_get_element_size(array->values);
 }

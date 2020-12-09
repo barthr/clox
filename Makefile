@@ -1,5 +1,5 @@
 TARGET = program
-LIBS = `pkg-config --cflags --libs glib-2.0`
+LIBS = -lm
 CC = gcc -std=c99
 CFLAGS = -g -Wall
 
@@ -12,12 +12,12 @@ OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
 HEADERS = $(wildcard *.h)
 
 %.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall -o $@
+	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
 clean:
 	-rm -f *.o

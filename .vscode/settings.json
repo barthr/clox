@@ -12,8 +12,6 @@
         "locale": "c",
         "__locale": "c",
         "cctype": "c",
-        "typeinfo": "c",
-        "cmath": "cpp",
-        "type_traits": "cpp"
+        "typeinfo": "c"
     }
 }
