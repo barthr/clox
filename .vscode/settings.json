@@ -12,6 +12,7 @@
         "locale": "c",
         "__locale": "c",
         "cctype": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "type_traits": "cpp"
     }
 }

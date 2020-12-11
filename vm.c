@@ -1,7 +1,10 @@
+#define _GNU_SOURCE
+
 #include "vm.h"
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "object.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -57,6 +60,18 @@ static bool isFalsey(Value value)
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
+static void concatenate(VM* vm)
+{
+    ObjString* a = AS_STRING(pop(vm));
+    ObjString* b = AS_STRING(pop(vm));
+
+    char* s = NULL;
+    asprintf(&s, "%s%s", b->chars, a->chars);
+
+    int length = a->length + b->length;
+    push(vm, OBJ_VAL(takeString(s, length)));
+}
+
 static InterpretResult run(VM* vm)
 {
 #define READ_BYTE() (*vm->ip++)
@@ -85,9 +100,17 @@ static InterpretResult run(VM* vm)
 #endif
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
-        case OP_ADD:
-            BINARY_OP(NUMBER_VAL, +);
+        case OP_ADD: {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                concatenate(vm);
+            } else if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+                BINARY_OP(NUMBER_VAL, +);
+            } else {
+                runtimeError(vm, "Operands must be two numbers or two strings.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
             break;
+        }
         case OP_SUBTRACT:
             BINARY_OP(NUMBER_VAL, -);
             break;
