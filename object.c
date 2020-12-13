@@ -8,32 +8,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-static Obj allocateObject(ObjType type)
+#define ALLOCATE_OBJ(vm, type, objectType) \
+    (type*)allocateObject(vm, sizeof(type), objectType)
+
+static Obj* allocateObject(VM* vm, size_t size, ObjType type)
 {
-    return (Obj) {
-        .type = type
-    };
+    Obj* object = (Obj*)reallocate(NULL, 0, size);
+    object->type = type;
+    object->next = vm->objects;
+    vm->objects = object;
+    return object;
 }
 
-static ObjString* allocateString(char* chars, int length)
+static ObjString* allocateString(VM* vm, char* chars, int length)
 {
-    ObjString* obj = malloc(sizeof(ObjString));
-    *obj = (ObjString) {
-        .chars = chars,
-        .length = length,
-        .obj = allocateObject(OBJ_STRING)
-    };
+    ObjString* obj = ALLOCATE_OBJ(vm, ObjString, OBJ_STRING);
+    obj->chars = chars;
+    obj->length = length;
     return obj;
 }
 
-ObjString* copyString(const char* chars, int length)
+ObjString* copyString(VM* vm, const char* chars, int length)
 {
-    return allocateString(strndup(chars, length), length);
+    return allocateString(vm, strndup(chars, length), length);
 }
 
-ObjString* takeString(const char* chars, int length)
+ObjString* takeString(VM* vm, char* chars, int length)
 {
-    return allocateString(chars, length);
+    return allocateString(vm, chars, length);
 }
 
 void printObject(Value value)

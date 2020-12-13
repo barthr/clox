@@ -4,6 +4,7 @@
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "memory.h"
 #include "object.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -32,10 +33,12 @@ static void runtimeError(VM* vm, const char* format, ...)
 void initVM(VM* vm)
 {
     resetStack(vm);
+    vm->objects = NULL;
 }
 
 void freeVM(VM* vm)
 {
+    freeObjects(vm);
 }
 
 void push(VM* vm, Value value)
@@ -69,7 +72,7 @@ static void concatenate(VM* vm)
     asprintf(&s, "%s%s", b->chars, a->chars);
 
     int length = a->length + b->length;
-    push(vm, OBJ_VAL(takeString(s, length)));
+    push(vm, OBJ_VAL(takeString(vm, s, length)));
 }
 
 static InterpretResult run(VM* vm)
@@ -172,7 +175,7 @@ InterpretResult interpret(VM* vm, const char* source)
     Chunk chunk;
     initChunk(&chunk);
 
-    if (!compile(source, &chunk)) {
+    if (!compile(vm, source, &chunk)) {
         freeChunk(&chunk);
         return INTERPRET_COMPILE_ERROR;
     }
